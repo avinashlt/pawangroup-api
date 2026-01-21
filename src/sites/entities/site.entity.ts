@@ -6,32 +6,31 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('users')
-export class User {
+@Entity('sites')
+export class Site {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column({ unique: true })
-  username: string;
-
-  @Column({ unique: true })
-  email: string;
 
   @Column()
   name: string;
 
   @Column()
-  password: string;
+  address: string;
 
-  @Column({ 
-    type: 'enum',
-    enum: ['supervisor', 'admin'],
-    default: 'supervisor'
-  })
-  role: 'supervisor' | 'admin';
+  @Column()
+  clientName: string;
 
   @Column({ nullable: true })
-  phone: string;
+  contactPerson: string;
+
+  @Column({ nullable: true })
+  contactPhone: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 6, nullable: true })
+  latitude: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 6, nullable: true })
+  longitude: number;
 
   @Column({ default: true })
   isActive: boolean;
