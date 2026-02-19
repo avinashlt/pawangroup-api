@@ -1,178 +1,221 @@
-# NestJS API with Supabase PostgreSQL
+# Client Portal Backend API
 
-A RESTful API built with NestJS framework and PostgreSQL database using Supabase as the database provider.
-
-## Features
-
-- **NestJS Framework**: Modern, scalable Node.js framework
-- **PostgreSQL**: Powerful relational database via Supabase
-- **TypeORM**: Database ORM with entity management
-- **Validation**: Request validation using class-validator
-- **CORS**: Cross-origin resource sharing enabled
-- **Environment Configuration**: Secure configuration management
+A comprehensive NestJS backend API for the security guard management client portal.
 
 ## Tech Stack
 
-- NestJS 11.x
-- TypeScript 5.x
-- PostgreSQL (Supabase)
-- TypeORM
-- class-validator & class-transformer
+- **Framework**: NestJS v10
+- **Database**: MongoDB with Mongoose v8
+- **Authentication**: JWT with Passport
+- **Documentation**: Swagger/OpenAPI
+- **Validation**: class-validator & class-transformer
 
-## Prerequisites
+## Getting Started
 
-- Node.js (v18 or higher)
+### Prerequisites
+
+- Node.js 18+
+- MongoDB 6+
 - npm or yarn
-- Supabase account and project
 
-## Project Setup
-
-### 1. Clone and Install
+### Installation
 
 ```bash
-# Install dependencies
+cd api
 npm install
 ```
 
-### 2. Configure Environment Variables
+### Environment Setup
 
-Create a `.env` file in the root directory:
-
-```env
-# Supabase PostgreSQL Configuration
-DATABASE_HOST=db.your-supabase-project.supabase.co
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=your-supabase-password
-DATABASE_NAME=postgres
-
-# Application
-PORT=3000
-NODE_ENV=development
-```
-
-**To get your Supabase credentials:**
-1. Go to your [Supabase Dashboard](https://app.supabase.com)
-2. Select your project
-3. Go to Settings > Database
-4. Find your connection details under "Connection string" or "Connection pooling"
-
-### 3. Build the Project
+Copy `.env.example` to `.env` and configure:
 
 ```bash
-npm run build
+cp .env.example .env
 ```
 
-## Running the Application
+Required environment variables:
+- `MONGODB_URI`: MongoDB connection string
+- `JWT_SECRET`: Secret key for JWT tokens
+- `JWT_EXPIRES_IN`: Token expiration (default: 7d)
+- `PORT`: Server port (default: 3000)
+
+### Running the Application
 
 ```bash
-# Development mode with hot reload
+# Development
 npm run start:dev
 
-# Production mode
+# Production
+npm run build
 npm run start:prod
-
-# Standard mode
-npm run start
 ```
 
-The API will be available at `http://localhost:3000`
+## Testing
 
-## API Endpoints
+### Prerequisites for Testing
 
-### Users Module
+#### MongoDB Atlas (Cloud)
+1. Ensure your IP is whitelisted in MongoDB Atlas Network Access:
+   - Go to **Network Access** in MongoDB Atlas
+   - Add your public IP or allow `0.0.0.0/0` (allow all)
+   - Status should show "Active"
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/users` | Get all users |
-| GET | `/users/:id` | Get user by ID |
-| POST | `/users` | Create new user |
-| PATCH | `/users/:id` | Update user |
-| DELETE | `/users/:id` | Delete user |
-
-### Example Request
-
-**Create a new user:**
+Find your public IP:
 ```bash
-curl -X POST http://localhost:3000/users \
+curl ifconfig.me
+```
+
+#### Local MongoDB (Alternative)
+```bash
+# macOS with brew
+brew install mongodb-community
+brew services start mongodb-community
+
+# Verify MongoDB is running
+mongosh --eval "db.version()"
+```
+
+### Testing MongoDB Connection
+
+Test MongoDB connectivity before running the server:
+
+```bash
+# Run the MongoDB connection test
+node test-mongo.js
+```
+
+Expected output on success:
+```
+Testing MongoDB Atlas connection...
+Waiting for connection (timeout: 30s)...
+SUCCESS: Connected to MongoDB Atlas!
+```
+
+If you get `FAILED: read ETIMEDOUT`, your IP is not whitelisted in Atlas.
+
+### Running the Server
+
+#### Development Mode (with auto-reload)
+```bash
+npm run start:dev
+```
+
+#### Production Mode
+```bash
+npm run build
+npm run start:prod
+```
+
+The server will start on `http://localhost:3000`
+
+### API Documentation
+
+Once the server is running, access Swagger documentation at:
+```
+http://localhost:3000/api/docs 
+```
+
+From here you can:
+- View all available endpoints
+- See request/response schemas
+- Test endpoints directly with the **Try it out** button
+
+### Testing API Endpoints
+
+#### Quick Health Check
+```bash
+curl http://localhost:3000/api
+```
+
+#### Authentication (Get JWT Token)
+```bash
+curl -X POST http://localhost:3000/auth/login \
   -H "Content-Type: application/json" \
   -d '{
-    "email": "user@example.com",
-    "name": "John Doe"
+    "email": "admin@example.com",
+    "password": "password123"
   }'
+```
+
+#### Using the JWT Token
+```bash
+TOKEN="<your_token_from_login>"
+
+curl http://localhost:3000/guards \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Example: Get Dashboard Stats
+```bash
+TOKEN="<your_token>"
+
+curl http://localhost:3000/dashboard/stats \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+## API Modules
+
+| Module | Endpoints | Description |
+|--------|-----------|-------------|
+| **Auth** | `/auth/*` | Login, register, password management |
+| **Guards** | `/guards/*` | Guard CRUD, status management |
+| **Dashboard** | `/dashboard/*` | Stats, trends, recent alerts |
+| **Attendance** | `/attendance/*` | Check-in/out, monthly reports |
+| **Incidents** | `/incidents/*` | Incident reporting & management |
+| **Locations** | `/locations/*` | Real-time tracking, history |
+| **Sites** | `/sites/*` | Site management |
+| **Checkpoints** | `/checkpoints/*` | Patrol checkpoints & scanning |
+| **Geofences** | `/geofences/*` | Geofence zones & alerts |
+| **SOS Alerts** | `/sos-alerts/*` | Emergency alert handling |
+| **Notifications** | `/notifications/*` | System notifications |
+| **Shifts** | `/shifts/*` | Shift scheduling, swaps, time-off |
+| **Reports** | `/reports/*` | Reports & analytics |
+| **Compliance** | `/compliance/*` | Checklists & submissions |
+| **Training** | `/training/*` | Training courses & assignments |
+| **Monitoring** | `/monitoring/*` | AI/sleep detection alerts |
+| **Cameras** | `/cameras/*` | Camera management |
+
+## Authentication
+
+All endpoints except `/auth/login` and `/auth/register` require JWT authentication.
+
+Include the token in requests:
+```
+Authorization: Bearer <token>
 ```
 
 ## Project Structure
 
 ```
-src/
-├── config/
-│   └── typeorm.config.ts    # Database configuration
-├── users/
-│   ├── dto/
-│   │   ├── create-user.dto.ts
-│   │   └── update-user.dto.ts
-│   ├── entities/
-│   │   └── user.entity.ts
-│   ├── users.controller.ts
-│   ├── users.service.ts
-│   └── users.module.ts
-├── app.controller.ts
-├── app.module.ts
-├── app.service.ts
-└── main.ts
+api/
+├── src/
+│   ├── main.ts              # Application entry point
+│   ├── app.module.ts        # Root module
+│   ├── modules/             # Feature modules
+│   │   ├── auth/
+│   │   ├── guards/
+│   │   ├── dashboard/
+│   │   ├── attendance/
+│   │   ├── incidents/
+│   │   ├── locations/
+│   │   ├── sites/
+│   │   ├── checkpoints/
+│   │   ├── geofences/
+│   │   ├── sos-alerts/
+│   │   ├── notifications/
+│   │   ├── shifts/
+│   │   ├── reports/
+│   │   ├── compliance/
+│   │   ├── training/
+│   │   ├── monitoring/
+│   │   └── cameras/
+│   └── schemas/             # MongoDB schemas
+├── package.json
+├── tsconfig.json
+├── nest-cli.json
+└── .env.example
 ```
-
-## Testing
-
-```bash
-# Unit tests
-npm run test
-
-# E2E tests
-npm run test:e2e
-
-# Test coverage
-npm run test:cov
-```
-
-## Database Schema
-
-The project includes a sample `User` entity with the following fields:
-
-- `id` (UUID, Primary Key)
-- `email` (String, Unique)
-- `name` (String)
-- `isActive` (Boolean, default: true)
-- `createdAt` (Timestamp)
-- `updatedAt` (Timestamp)
-
-## Environment Variables
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| DATABASE_HOST | Supabase database host | db.xxxxx.supabase.co |
-| DATABASE_PORT | Database port | 5432 |
-| DATABASE_USER | Database username | postgres |
-| DATABASE_PASSWORD | Database password | your-password |
-| DATABASE_NAME | Database name | postgres |
-| PORT | Application port | 3000 |
-| NODE_ENV | Environment mode | development/production |
-
-## Development Tips
-
-- TypeORM's `synchronize` option is enabled in development to auto-create tables
-- In production, use migrations instead of synchronize
-- Update the entities path in `typeorm.config.ts` as you add more entities
-- Use the Users module as a template for creating new modules
-
-## Resources
-
-- [NestJS Documentation](https://docs.nestjs.com)
-- [TypeORM Documentation](https://typeorm.io)
-- [Supabase Documentation](https://supabase.com/docs)
-- [NestJS Discord](https://discord.gg/G7Qnnhy)
 
 ## License
 
-This project is [MIT licensed](LICENSE).
+Proprietary - Pawan Group
